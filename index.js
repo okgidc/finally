@@ -1,4 +1,5 @@
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
+const keep_alive = require('./keep_alive.js')
 const set = require(`${process.cwd()}/Assets/Config/settings`);
 require("dotenv").config()
 require(`colors`)
