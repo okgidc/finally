@@ -1,43 +1,83 @@
-const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
-const keep_alive = require('./keep_alive.js')
-const set = require(`${process.cwd()}/Assets/Config/settings`);
-require("dotenv").config()
-require(`colors`)
-const client = new Client({
-  allowedMentions: {
-    parse: ["roles", "users", "everyone"],
-    repliedUser: false,
-  },
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildPresences,
-    GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.DirectMessages,
-    GatewayIntentBits.MessageContent
-  ],
-  partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
+require("dotenv").config();
+
+const Discord = require("discord.js");
+const keep_alive = require('./keep_alive.js');
+const client = new Discord.Client();
+
+const token = process.env.BOT_TOKEN;
+
+client.once("ready", () => {
+  console.log("Ready!");
+
+  // Set the bot's status to Do Not Disturb (DND) and display "/look" as a custom status
+  client.user.setPresence({
+    activities: [{
+      name: "/look", // The custom status message
+      type: "CUSTOM_STATUS", // Set as CUSTOM_STATUS (no game type)
+    }],
+    status: "dnd", // Set the bot's status to Do Not Disturb
+  });
 });
 
-
-
-[`variables`, `extraEvents`,`checker`, `mongo_db`, `server`, 'slashCommand', 'events', `antiCrash`].forEach((handler) => {
-  const file = require(`./src/handlers/${handler}`)
-  if (file.execute) file.execute(client);
-  else file(client);
-});
-
-client.login(process.env.TOKEN).catch((error) => { console.log((error.message).bold.red) });
-
-
-module.exports = client;
-
-// auto kill 
-setInterval(() => {
-  if (set.REPL_SETTINGS.AUTO_KILL && set.REPL_USER) {
-    if (!client || !client.user) {
-      client.logger("Rate limit assumed, restarting")
-      process.kill(1)
+client.on("message", async (message) => {
+  if (message.content.includes("bruh")) {
+    try {
+      await message.react("🇧");
+      await message.react("🇷");
+      await message.react("🇺");
+      await message.react("🇭");
+    } catch (error) {
+      console.error("One of the emojis failed to react.");
     }
   }
-}, 5000)
+
+  if (message.content.includes("lmao")) {
+    message.react("😂");
+  }
+
+  if (message.content.includes("oof")) {
+    message.react("753386121123201164");
+  }
+
+  if (message.content.includes("rip")) {
+    message.react("754217664808878141");
+  }
+
+  if (
+    message.channel.id === "757708878203977888" &&
+    message.content == "oof among_us"
+  ) {
+    var targetMember = message.get(message.author);
+    message.reply("What is the game code?...");
+
+    message.channel
+      .awaitMessages((m) => m.author.id == message.author.id, {
+        max: 1,
+        time: 30000,
+      })
+      .then((collected) => {
+        var gameCode = collected.first().content;
+        if (collected.first().content.length() <= 6) {
+          const embedMsg = new Discord.MessageEmbed()
+            .setTitle("Among Us Game")
+            .setDescription(
+              targetMember +
+                " hosted an Among Us Game\nJoin the game: `" +
+                gameCode +
+                "`"
+            )
+            .setTimestamp();
+
+          message.channel.send(embedMsg);
+        } else {
+          message.reply("That is not a valid code");
+        }
+      })
+      .catch(() => {
+        message.reply("No answer after 30 seconds, operation canceled.");
+      });
+  }
+});
+
+// Run the bot with your token (make sure to keep your token secure)
+client.login(token);
